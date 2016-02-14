@@ -18,7 +18,7 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 cluster = Cluster()
-session = cluster.connect('test')
+session = cluster.connect('accelerometer')
 
 
 @app.route('/')
@@ -43,7 +43,7 @@ def receive_data():
 @app.route('/api/insert/batch', methods=['POST'])
 def receive_data():
     users_to_insert = request.get_json()
-    insert_user = session.prepare("INSERT INTO acc_data_capture (user_id, timestamp, x, y, z) VALUES (?, ?, ?, ?, ?)")
+    insert_user = session.prepare("INSERT INTO user_accel_data_test (user_id, timestamp, x, y, z) VALUES (?, ?, ?, ?, ?)")
     batch = BatchStatement(consistency_level=ConsistencyLevel.ANY)
 
     for i in users_to_insert['data']:

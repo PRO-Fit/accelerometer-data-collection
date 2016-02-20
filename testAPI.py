@@ -18,7 +18,7 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 cluster = Cluster()
-session = cluster.connect('test')
+session = cluster.connect('accelerometer')
 
 
 @app.route('/')
@@ -45,7 +45,7 @@ def receive_data():
 def receive_data():
     users_to_insert = request.get_json()
 
-    insert_user = session.prepare("INSERT INTO acc_data_capture (user_id, timestamp, x, y, z) VALUES (?, ?, ?, ?, ?)")
+    insert_user = session.prepare("INSERT INTO user_accel_data_test (user_id, timestamp, x, y, z) VALUES (?, ?, ?, ?, ?)")
     batch = BatchStatement(consistency_level=ConsistencyLevel.ANY)
 
     for i in users_to_insert:
@@ -62,4 +62,4 @@ if __name__ == '__main__':
     # port = int(sys.argv[2])
     # host = 'localhost'
     # port = 5000
-    app.run(host="127.0.0.1", port=8000)
+    app.run(host="0.0.0.0", port=8000)

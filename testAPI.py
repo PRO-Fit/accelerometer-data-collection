@@ -2,7 +2,7 @@ from cassandra.query import BatchStatement
 from flask import Flask
 from flask import request
 from flask import Response
-from flask import jsonify
+from flask import json
 from cassandra.cluster import Cluster
 from cassandra import ConsistencyLevel, OperationTimedOut
 
@@ -40,20 +40,21 @@ def receive_data():
     return resp
 '''
 
+
 @app.route('/api/insert/batch', methods=['POST'])
 def receive_data():
     users_to_insert = request.get_json()
+
     insert_user = session.prepare("INSERT INTO acc_data_capture (user_id, timestamp, x, y, z) VALUES (?, ?, ?, ?, ?)")
     batch = BatchStatement(consistency_level=ConsistencyLevel.ANY)
 
-    for i in users_to_insert['data']:
+    for i in users_to_insert:
         batch.add(insert_user, (i['user_id'], i['timestamp'], i['x'], i['y'], i['z']))
 
     session.execute(batch)
-    resp = jsonify(users_to_insert)
-    # print resp
-    resp.status_code = 200
-    return resp
+
+    return Response(json.dumps(users_to_insert),  mimetype='application/json')
+
 
 if __name__ == '__main__':
     app.debug = True

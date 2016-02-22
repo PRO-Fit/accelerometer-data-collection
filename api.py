@@ -17,8 +17,10 @@ port = None
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-cluster = Cluster()
-session = cluster.connect('accelerometer')
+def db():
+    cluster = Cluster()
+    session = cluster.connect('accelerometer')
+    return session
 
 
 @app.route('/')
@@ -45,21 +47,19 @@ def receive_data():
 def receive_data():
     users_to_insert = request.get_json()
 
-    insert_user = session.prepare("INSERT INTO user_accel_data_test (user_id, timestamp, x, y, z) VALUES (?, ?, ?, ?, ?)")
+    insert_user = db().prepare("INSERT INTO user_accel_data_test (user_id, timestamp, x, y, z) VALUES (?, ?, ?, ?, ?)")
     batch = BatchStatement(consistency_level=ConsistencyLevel.ANY)
 
     for i in users_to_insert:
         batch.add(insert_user, (i['user_id'], i['timestamp'], i['x'], i['y'], i['z']))
 
-    session.execute(batch)
+    db().execute(batch)
 
     return Response(json.dumps(users_to_insert),  mimetype='application/json')
 
 
 if __name__ == '__main__':
     app.debug = True
-    # host = sys.argv[1]
-    # port = int(sys.argv[2])
-    # host = 'localhost'
-    # port = 5000
-    app.run(host="0.0.0.0", port=8000)
+    host = sys.argv[1]
+    port = int(sys.argv[2])
+    app.run(host=host, port=port)

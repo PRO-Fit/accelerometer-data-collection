@@ -11,11 +11,9 @@ import sys
 import logging
 
 app = Flask(__name__)
-actor = None
-host = None
-port = None
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
+
 
 def db():
     cluster = Cluster()
@@ -28,21 +26,6 @@ def hello_world():
     return 'Hello World!'
 
 
-'''
-@app.route('/api/test', methods=['POST'])
-def receive_data():
-    data = request.get_json()
-    user_id = data['user_id']
-    name = data['name']
-    session.execute("""insert into users (user_id, name) values ( %(uid)s, %(name)s )""",
-                    {'uid': data['user_id'], 'name': data['name']})
-    resp = jsonify(data)
-    # print resp
-    resp.status_code = 200
-    return resp
-'''
-
-
 @app.route('/api/insert/batch', methods=['POST'])
 def receive_data():
     users_to_insert = request.get_json()
@@ -51,12 +34,10 @@ def receive_data():
     batch = BatchStatement(consistency_level=ConsistencyLevel.ANY)
 
     for i in users_to_insert:
-        batch.add(insert_user, (i['user_id'], i['timestamp'], i['x'], i['y'], i['z']))
-
+        batch.add(insert_user, (str(i['user_id']), str(i['timestamp']), i['x'], i['y'], i['z']))
     db().execute(batch)
 
     return Response(json.dumps(users_to_insert),  mimetype='application/json')
-
 
 if __name__ == '__main__':
     app.debug = True
